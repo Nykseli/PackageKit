@@ -90,6 +90,14 @@
 #include <zypp/target/rpm/librpmDb.h>
 #include <zypp/ui/Selectable.h>
 
+#include <tukit/libtukit.h>
+#include <fstream>
+
+extern "C" {
+// TODO: this should come from libtukit
+int tukit_tx_call_fn(tukit_tx tx, int (*callback)(void*), void* ctx, const char* output[]);
+}
+
 using namespace std;
 using namespace zypp;
 using zypp::filesystem::PathInfo;
@@ -3537,7 +3545,33 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		}
 	}
 
-	zypp_perform_execution (job, zypp, UPDATE, FALSE, transaction_flags);
+	// TODO: the subprocessy stuff should be probably here?
+	gboolean sim = pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
+	if (sim) {
+		zypp_perform_execution (job, zypp, UPDATE, FALSE, transaction_flags);
+	} else {
+
+		auto cbfn = [&]() {
+			zypp_perform_execution (job, zypp, UPDATE, FALSE, transaction_flags);
+			return 0;
+		};
+
+		auto cbfnAdapter = [](void* context) {
+			auto adapt = reinterpret_cast<std::function<int (void)>*> (context);
+			return (*adapt)();
+		};
+
+		tukit_tx tukit = tukit_new_tx();
+		tukit_set_loglevel(Debug);
+		tukit_tx_init(tukit, "");
+		const char* output222 = NULL;
+		std::function<int (void)> cvbfn_obj = cbfn;
+		tukit_tx_call_fn(tukit, cbfnAdapter, &cvbfn_obj, &output222);
+
+		// tukit_tx_keep(tukit);
+		tukit_tx_finalize(tukit);
+		tukit_free_tx(tukit);
+	}
 }
 
 /**

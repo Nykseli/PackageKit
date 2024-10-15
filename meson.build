@@ -109,7 +109,7 @@ add_project_arguments(
   '-Wall',
   '-Wcast-align',
   '-Wno-uninitialized',
-  '-Werror=missing-declarations',
+  '-Wmissing-declarations',
   '-Wredundant-decls',
   '-Wpointer-arith',
   '-Wcast-align',

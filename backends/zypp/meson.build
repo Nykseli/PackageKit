@@ -1,6 +1,8 @@
 add_languages('cpp')
 
 zypp_dep = dependency('libzypp', version: '>=17.31.0')
+# TODO: figure out actual min version
+tukit_dep = dependency('tukit', version: '>=4.8.0')
 
 # define if libzypp returns package size in bytes
 zypp_args = []
@@ -16,6 +18,7 @@ shared_module(
     packagekit_glib2_dep,
     zypp_dep,
     gmodule_dep,
+    tukit_dep,
   ],
   cpp_args: [
     '-DG_LOG_DOMAIN="PackageKit-Zypp"',

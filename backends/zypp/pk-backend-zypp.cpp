@@ -3562,14 +3562,8 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		};
 
 		tukit_tx tukit = tukit_new_tx();
-		tukit_set_loglevel(Debug);
-		tukit_tx_init(tukit, "");
-		const char* output222 = NULL;
 		std::function<int (void)> cvbfn_obj = cbfn;
-		tukit_tx_call_fn(tukit, cbfnAdapter, &cvbfn_obj, &output222);
-
-		// tukit_tx_keep(tukit);
-		tukit_tx_finalize(tukit);
+		tukit_tx_call_fn(tukit, cbfnAdapter, &cvbfn_obj, NULL);
 		tukit_free_tx(tukit);
 	}
 }
